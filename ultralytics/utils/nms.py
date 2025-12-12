@@ -26,6 +26,7 @@ def non_max_suppression(
     rotated: bool = False,
     end2end: bool = False,
     return_idxs: bool = False,
+    force_cpu: bool =False,
 ):
     """Perform non-maximum suppression (NMS) on prediction results.
 
@@ -49,6 +50,7 @@ def non_max_suppression(
         rotated (bool): Whether to handle Oriented Bounding Boxes (OBB).
         end2end (bool): Whether the model is end-to-end and doesn't require NMS.
         return_idxs (bool): Whether to return the indices of kept detections.
+        force_cpu (bool): Whether to move the prediction tensor to the CPU before processing.
 
     Returns:
         output (list[torch.Tensor]): List of detections per image with shape (num_boxes, 6 + num_masks) containing (x1,
@@ -60,6 +62,8 @@ def non_max_suppression(
     assert 0 <= iou_thres <= 1, f"Invalid IoU {iou_thres}, valid values are between 0.0 and 1.0"
     if isinstance(prediction, (list, tuple)):  # YOLOv8 model in validation model, output = (inference_out, loss_out)
         prediction = prediction[0]  # select only inference output
+    if force_cpu:
+        prediction = prediction.detach().cpu()
     if classes is not None:
         classes = torch.tensor(classes, device=prediction.device)
 
